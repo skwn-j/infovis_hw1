@@ -1,50 +1,56 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<head>
-  <title>Ordinal scale</title>
-</head>
-
-<style>
-body {
-  font-family: "Helvetica Neue", Helvetica, sans-serif;
-  font-size: 14px;
-  color: #333;
-}
-</style>
-
-<body>
-  <svg width="800" height="60">
-  	<g id="wrapper" transform="translate(100, 40)">
-  	</g>
-  </svg>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.2/d3.min.js"></script>
-  <script>
-var myData = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-var linearScale = d3.scaleLinear()
-	.domain([0, 11])
-	.range([0, 600]);
-
-var ordinalScale = d3.scaleOrdinal()
-	.domain(myData)
-	.range(['black', '#ccc', '#ccc']);
-
-d3.select('#wrapper')
-	.selectAll('text')
-	.data(myData)
-	.enter()
-	.append('text')
-	.attr('x', function(d, i) {
-		return linearScale(i);
-	})
-	.text(function(d) {
-		return d;
-	})
-	.style('fill', function(d) {
-		return ordinalScale(d);
-	});
-
-  </script>
-</body>
+<html>
+  <head>
+    <title>D3 first tutorial</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <style>
+      
+    </style>
+  </head>
+  <body>
+    <script>
+        var svg = d3.select("body")
+                    .append("svg")
+                    .attr("width",400)
+                    .attr("height",400);
+        var data = [40, 100, 80, 140, 60, 70];
+        
+        var x = d3.scale.linear()
+                .domain([0,200])
+                .range([10, 300]);
+                
+        var rect = svg.selectAll("rect")
+                    .data(data)
+                    .enter()
+                    .append("rect")
+                    .attr("x",10)
+                    .attr("y", function(d, i){return i * (20 + 1) })
+                    .attr("width",function(d){return x(d)})
+                    .attr("height", 20)
+                    .attr("fill", "steelblue");
+            
+        var xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom")
+                .ticks(5)
+                .outerTickSize(0)
+                .tickPadding(-5)
+                ;
+                
+        svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0,130)")
+          .call(xAxis);
+        
+        var label = svg.selectAll(".label")
+            .data(data)
+            .enter()
+            .append("text")
+            .attr("x", function(d, i){return x(d)})
+            .attr("y", function(d, i){return i * (20 + 1)+16})
+            .attr("text-anchor","end")
+            .text(function(d){return d})
+            .style("fill", "white");
+    </script>
+  </body>
 </html>

@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Scatterplot</title>
+  <title>Infovis HW1</title>
   <style>
   </style>
 </head>
@@ -11,6 +11,7 @@
   </svg>
   <script src="https://d3js.org/d3.v5.min.js"></script>
   <script>
+    let bar_domain = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
     let bar_data = 
     [
       {
@@ -64,37 +65,35 @@
         "color": "#848484"
       }
     ]
-/*
+
     bar_data.forEach(function(d) {
-        d.value = (Math.random()*101).toString;
+      d.value = (Math.random()*101).toString();
     });
- */
+ 
     let svg = d3.select('svg');
-    let width = 500;
-    let height = 500;
- 
-    let x = d3.scaleLinear()
-              .domain([
-                d3.min(data, d => d.rotten_rating),
-                d3.max(data, d => d.rotten_rating)
-              ])
-              .range([0, width]);
- 
-    let y = d3.scaleLinear()
-              .domain([
-                d3.min(data, d => d.us_gross),
-                d3.max(data, d => d.us_gross)
-              ])
-              .range([height, 0]);
- 
+    let maxHeight = 100;
+    let barWidth = 30;
+    let margin = 10;
+    
+    let linearScale = d3.scaleLinear()
+	  .domain([0, 11])
+	  .range([0, 600]);
+
+    let ordinalScale = d3.scaleOrdinal()
+	  .domain(bar_domain)
+
     svg
-    .selectAll('circle')
+    .selectAll('rect')
     .data(bar_data)
     .enter()
-      .append('circle')
-      .attr('r', 3.5)
-      .attr('cx', d => x(d.rotten_rating))
-      .attr('cy', d => y(d.us_gross));
+    .append('rect')
+    .attr('width', 30)
+    .attr('height', d => d.value)
+    .style('fill', d=> d.color)
+    .attr('x', (d, i) => (barWidth + margin) * i)
+    .attr('y', function() {
+        return maxHeight - d3.select(this).attr('height');
+      });
  
  
   </script>
