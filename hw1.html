@@ -94,7 +94,15 @@
       .domain(bar_domain)
       .range([0, width]);
 
+    let dy = d3.scaleLinear()
+          .domain([
+            d3.min(bar_data, d => d.value),
+            d3.max(bar_data, d => d.value)
+          ])
+          .range([height, 0]);
+
     let dxAxis = d3.axisBottom(dx);
+    let dyAxis = d3.axisLeft(dy);
 
     svg
     .selectAll('rect')
@@ -105,13 +113,15 @@
     .attr('height', d => d.value)
     .style('fill', d=> d.color)
     .attr('x', (d, i) => (40 + margin.mid) * i)
-    .attr('y', function() {
-       return height - d3.select(this).attr('height');
-      });
+    .attr('y', height - dy);
 
     svg.append('g')
       .attr('transform', translate(0, width))
       .call(dxAxis);
+     
+    svg
+      .append('g')
+      .call(dyAxis);
 
 
     //-------------------------------------------------------------scatterplot
@@ -121,7 +131,8 @@
      plot_data.push(
         { 
          val_x : Math.random()*101,
-         val_y : Math.random()*101
+         val_y : Math.random()*101,
+         color : '#FFFF00'
         }
       );
    }
@@ -154,7 +165,9 @@
     .append('circle')
     .attr('r', 3.5)
     .attr('cx', d=>px(d.val_x))
-    .attr('cy', d=>py(d.val_y));
+    .attr('cy', d=>py(d.val_y))
+    .style('fill', d=> d.color);
+
   let pxAxis = d3.axisBottom(px);
   let pyAxis = d3.axisLeft(py);
  
