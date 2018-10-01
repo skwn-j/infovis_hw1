@@ -7,95 +7,166 @@
   </style>
 </head>
 <body>
-  <svg width="550" height="550">
-  </svg>
+  <div id= 'bar'> </div>
+  <div id= 'plot'> </div>
   <script src="https://d3js.org/d3.v5.min.js"></script>
   <script>
+
+    function translate(x, y) {
+      return 'translate(' + x + ',' + y + ')';
+    }
+
+    let svgWidth = 550;
+    let svgHeight = 550;
+    let margin = {top: 20, right: 10, bottom: 30, left: 40, mid: 10};
+    let width = svgWidth - margin.left - margin.right;
+    let height = svgHeight - margin.top - margin.bottom;
+    
+    //-------------------------------------------------------------bar
     let bar_domain = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    let bar_color = ['#FF0000', '#FF8000', '#FFFF00', '#80FF00', '#00FFFF', '#0080FF', 
+                    '#0000FF', '#8000FF', '#FF00FF', '#848484']
     let bar_data = 
     [
       {
-        "name": "A",
-        "value": "10",
-        "color": "#FF0000"
+        name: "A",
+        value: 10,
+        color: "#FF0000"
       },
       {
-        "name": "B",
-        "value": "10",
-        "color": "#FF8000"
+        name: "B",
+        value: 10,
+        color: "#FF8000"
       },
       {
-        "name": "C",
-        "value": "10",
-        "color": "#FFFF00"
+        name: "C",
+        value: 10,
+        color: "#FFFF00"
       },
       {
-        "name": "D",
-        "value": "10",
-        "color": "#80FF00"
+        name: "D",
+        value: 10,
+        color: "#80FF00"
       },
       {
-        "name": "E",
-        "value": "10",
-        "color": "#00FFFF"
+        name: "E",
+        value: 10,
+        color: "#00FFFF"
       },
       {
-        "name": "F",
-        "value": "10",
-        "color": "#0080FF"
+        name: "F",
+        value: 10,
+        color: "#0080FF"
       },
       {
-        "name": "G",
-        "value": "10",
-        "color": "#0000FF"
+        name: "G",
+        value: 10,
+        color: "#0000FF"
       },
       {
-        "name": "H",
-        "value": "10",
-        "color": "#8000FF"
+        name: "H",
+        value: 10,
+        color: "#8000FF"
       },
       {
-        "name": "I",
-        "value": "10",
-        "color": "#FF00FF"
+        name: "I",
+        value: 10,
+        color: "#FF00FF"
       },
       {
-        "name": "J",
-        "value": "10",
-        "color": "#848484"
+        name: "J",
+        value: 10,
+        color: "#848484"
       }
     ]
 
     bar_data.forEach(function(d) {
-      d.value = (Math.random()*101).toString();
+      d.value = Math.random()*101;
     });
  
-    let svg = d3.select('svg');
-    let maxHeight = 100;
-    let barWidth = 30;
-    let margin = 10;
-    
-    let linearScale = d3.scaleLinear()
-	  .domain([0, 11])
-	  .range([0, 600]);
+    let svg = d3.select('#bar')
+      .append('svg')
+      .attr('width', svgWidth)
+      .attr('height', svgHeight)
+      .append('g')
+        .attr('transform', translate(margin.left, margin.top));
+    let dx = d3.scaleOrdinal()
+      .domain(bar_domain)
+      .range([0, width]);
 
-    let ordinalScale = d3.scaleOrdinal()
-	  .domain(bar_domain)
+    let dxAxis = d3.axisBottom(dx);
 
     svg
     .selectAll('rect')
     .data(bar_data)
     .enter()
     .append('rect')
-    .attr('width', 30)
+    .attr('width', 40)
     .attr('height', d => d.value)
     .style('fill', d=> d.color)
-    .attr('x', (d, i) => (barWidth + margin) * i)
+    .attr('x', (d, i) => (40 + margin.mid) * i)
     .attr('y', function() {
-        return maxHeight - d3.select(this).attr('height');
+       return height - d3.select(this).attr('height');
       });
+
+    svg.append('g')
+      .attr('transform', translate(0, width))
+      .call(dxAxis);
+
+
+    //-------------------------------------------------------------scatterplot
+   let plot_data = [];
+  
+   for(let i=0; i<100; i++) {
+     plot_data.push(
+        { 
+         val_x : Math.random()*101,
+         val_y : Math.random()*101
+        }
+      );
+   }
+   
+   let px = d3.scaleLinear()
+              .domain([
+                d3.min(plot_data, d => d.val_x),
+                d3.max(plot_data, d => d.val_x)
+              ])
+              .range([0, width]);
+
+   let py = d3.scaleLinear()
+              .domain([
+                d3.min(plot_data, d => d.val_y),
+                d3.max(plot_data, d => d.val_y)
+              ])
+              .range([height, 0]);
+
+   let svg2 = d3.select("#plot")
+    .append('svg')
+    .attr('width', svgWidth)
+    .attr('height', svgHeight)
+    .append('g')
+      .attr('transform', translate(margin.left, margin.top));
+
+  svg2
+  .selectAll('circle')
+  .data(plot_data)
+  .enter()
+    .append('circle')
+    .attr('r', 3.5)
+    .attr('cx', d=>px(d.val_x))
+    .attr('cy', d=>py(d.val_y));
+  let pxAxis = d3.axisBottom(px);
+  let pyAxis = d3.axisLeft(py);
  
- 
+  svg2
+  .append('g')
+  .attr('transform', translate(0, height))
+  .call(pxAxis);
+  
+  svg2
+  .append('g')
+  .call(pyAxis);
+
   </script>
 </body>
 </html>
