@@ -24,8 +24,6 @@
     
     //-------------------------------------------------------------bar
     let bar_domain = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-    let bar_color = ['#FF0000', '#FF8000', '#FFFF00', '#80FF00', '#00FFFF', '#0080FF', 
-                    '#0000FF', '#8000FF', '#FF00FF', '#848484']
     let bar_data = 
     [
       {
@@ -90,20 +88,19 @@
       .attr('height', svgHeight)
       .append('g')
         .attr('transform', translate(margin.left, margin.top));
-    let dx = d3.scaleOrdinal()
+
+    let dx = d3.scaleBand()
       .domain(bar_domain)
       .range([0, width]);
 
     let dy = d3.scaleLinear()
-          .domain([
-            d3.min(bar_data, d => d.value),
-            d3.max(bar_data, d => d.value)
-          ])
+          .domain([0, 100])
           .range([height, 0]);
 
     let dxAxis = d3.axisBottom(dx);
     let dyAxis = d3.axisLeft(dy);
-
+    
+    let colorScale = d3.scaleOrdinal(d3.schemeCategory10);
     svg
     .selectAll('rect')
     .data(bar_data)
@@ -111,9 +108,9 @@
     .append('rect')
     .attr('width', 40)
     .attr('height', d => d.value)
-    .style('fill', d=> d.color)
+    .style('fill', (d, i) => colorScale(i))
     .attr('x', (d, i) => (40 + margin.mid) * i)
-    .attr('y', height - dy);
+    .attr('y', height*(1-dy/100));
 
     svg.append('g')
       .attr('transform', translate(0, width))
@@ -126,13 +123,15 @@
 
     //-------------------------------------------------------------scatterplot
    let plot_data = [];
+
+
   
    for(let i=0; i<100; i++) {
      plot_data.push(
         { 
          val_x : Math.random()*101,
          val_y : Math.random()*101,
-         color : '#FFFF00'
+         color : d3.interpolateSpectral(Math.random())
         }
       );
    }
@@ -151,6 +150,7 @@
               ])
               .range([height, 0]);
 
+   let divergeScale = d3.scaleLinear(d3.schemeSpectral);
    let svg2 = d3.select("#plot")
     .append('svg')
     .attr('width', svgWidth)
@@ -166,7 +166,7 @@
     .attr('r', 3.5)
     .attr('cx', d=>px(d.val_x))
     .attr('cy', d=>py(d.val_y))
-    .style('fill', d=> d.color);
+    .style('fill', d=>d.color);
 
   let pxAxis = d3.axisBottom(px);
   let pyAxis = d3.axisLeft(py);
