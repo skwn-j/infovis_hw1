@@ -107,10 +107,10 @@
     .enter()
     .append('rect')
     .attr('width', 40)
-    .attr('height', d => d.value)
+    .attr('height', d=>dy(d.value))
     .style('fill', (d, i) => colorScale(i))
     .attr('x', (d, i) => (40 + margin.mid) * i)
-    .attr('y', height*(1-dy/100));
+    .attr('y', (d, i) => height - dy(d.value));
 
     svg.append('g')
       .attr('transform', translate(0, width))
@@ -120,22 +120,32 @@
       .append('g')
       .call(dyAxis);
 
+    button
+    let button = d3.button()
+      .on('press', function() {
+        d3.selectAll('circle')
+      });
+
 
     //-------------------------------------------------------------scatterplot
-   let plot_data = [];
+ 
 
+  function randomCircle() {
+    let circle = 
+            { 
+              val_x : Math.random()*101,
+              val_y : Math.random()*101,
+              size : Math.random()*6,
+              color : d3.interpolateSpectral(Math.random())
+            };
+    return circle;
+  }
 
-  
-   for(let i=0; i<100; i++) {
-     plot_data.push(
-        { 
-         val_x : Math.random()*101,
-         val_y : Math.random()*101,
-         color : d3.interpolateSpectral(Math.random())
-        }
-      );
-   }
-   
+  let plot_data = [];
+  for (let i=0; i<100; i++) {
+    plot_data.push(randomCircle());
+  }
+    
    let px = d3.scaleLinear()
               .domain([
                 d3.min(plot_data, d => d.val_x),
@@ -163,14 +173,14 @@
   .data(plot_data)
   .enter()
     .append('circle')
-    .attr('r', 3.5)
+    .attr('r', d=>d.size)
     .attr('cx', d=>px(d.val_x))
     .attr('cy', d=>py(d.val_y))
     .style('fill', d=>d.color);
 
   let pxAxis = d3.axisBottom(px);
   let pyAxis = d3.axisLeft(py);
- 
+  
   svg2
   .append('g')
   .attr('transform', translate(0, height))
