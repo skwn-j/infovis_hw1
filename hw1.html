@@ -18,7 +18,7 @@
 
     let svgWidth = 550;
     let svgHeight = 550;
-    let margin = {top: 20, right: 10, bottom: 30, left: 40, mid: 10};
+    let margin = {top: 30, right: 10, bottom: 20, left: 40, mid: 10};
     let width = svgWidth - margin.left - margin.right;
     let height = svgHeight - margin.top - margin.bottom;
     
@@ -120,13 +120,10 @@
       .append('g')
       .call(dyAxis);
 
-    let svg_b =
-      d3.select('#plot')
-      .append('button')
-      .width()
-
     //-------------------------------------------------------------scatterplot
  
+
+  
 
   function randomCircle() {
     let circle = 
@@ -158,8 +155,28 @@
               ])
               .range([height, 0]);
 
-   let divergeScale = d3.scaleLinear(d3.schemeSpectral);
-   let svg2 = d3.select("#plot")
+  let divergeScale = d3.scaleLinear(d3.schemeSpectral);
+
+  let button = d3.select('#plot')
+    .append('button')
+  
+  button
+    .on('click', function() {
+      for(let i=0; i<100; i++) {
+        plot_data[i] = randomCircle();
+      }
+
+      svg2
+        .selectAll('circle')
+        .transition()
+        .duration(1000)
+        .attr('r', d=>d.size)
+        .attr('cx', d=>px(d.val_x))
+        .attr('cy', d=>py(d.val_y))
+        .style('fill', d=>d.color);
+    });
+
+  let svg2 = d3.select("#plot")
     .append('svg')
     .attr('width', svgWidth)
     .attr('height', svgHeight)
@@ -187,6 +204,7 @@
   svg2
   .append('g')
   .call(pyAxis);
+
 
   </script>
 </body>
