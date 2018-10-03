@@ -120,12 +120,10 @@
       .append('g')
       .call(dyAxis);
 
-    button
-    let button = d3.button()
-      .on('press', function() {
-        d3.selectAll('circle')
-      });
-
+    let svg_b =
+      d3.select('#plot')
+      .append('button')
+      .width()
 
     //-------------------------------------------------------------scatterplot
  

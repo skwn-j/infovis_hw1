@@ -1,130 +1,252 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<style> /* set the CSS */
-
-body { font: 12px Arial;}
-
-path { 
-    stroke: steelblue;
-    stroke-width: 2;
-    fill: none;
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Scatterplot with a toggle button</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <!-- <link rel="stylesheet" type="text/css" href="styles/barplot.css"> -->
+    <style rel="stylesheet" type="text/css">
+        #scatterplot {
+    padding: 10px;
 }
 
-.axis path,
-.axis line {
+#scatterplot div#area1{
+    display: block;
+}
+
+#scatterplot .axis path,
+#scatterplot .axis line {
     fill: none;
-    stroke: grey;
-    stroke-width: 1;
+    stroke: black;
     shape-rendering: crispEdges;
 }
 
-</style>
-<body>
-
-<div id="option">
-    <input name="updateButton" 
-           type="button" 
-           value="Update" 
-           onclick="updateData()" />
-</div>
-
-<!-- load the d3.js library -->    
-<script src="http://d3js.org/d3.v3.min.js"></script>
-
-<script>
-
-// Set the dimensions of the canvas / graph
-var margin = {top: 30, right: 20, bottom: 30, left: 50},
-    width = 600 - margin.left - margin.right,
-    height = 270 - margin.top - margin.bottom;
-
-// Parse the date / time
-var parseDate = d3.time.format("%d-%b-%y").parse;
-
-// Set the ranges
-var x = d3.time.scale().range([0, width]);
-var y = d3.scale.linear().range([height, 0]);
-
-// Define the axes
-var xAxis = d3.svg.axis().scale(x)
-    .orient("bottom").ticks(5);
-
-var yAxis = d3.svg.axis().scale(y)
-    .orient("left").ticks(5);
-
-// Define the line
-var valueline = d3.svg.line()
-    .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.close); });
-    
-// Adds the svg canvas
-var svg = d3.select("body")
-    .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-        .attr("transform", 
-              "translate(" + margin.left + "," + margin.top + ")");
-
-// Get the data
-d3.csv("data.csv", function(error, data) {
-    data.forEach(function(d) {
-        d.date = parseDate(d.date);
-        d.close = +d.close;
-    });
-
-    // Scale the range of the data
-    x.domain(d3.extent(data, function(d) { return d.date; }));
-    y.domain([0, d3.max(data, function(d) { return d.close; })]);
-
-    // Add the valueline path.
-    svg.append("path")
-        .attr("class", "line")
-        .attr("d", valueline(data));
-
-    // Add the X Axis
-    svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis);
-
-    // Add the Y Axis
-    svg.append("g")
-        .attr("class", "y axis")
-        .call(yAxis);
-
-});
-
-// ** Update data section (Called from the onclick)
-function updateData() {
-
-    // Get the data again
-    d3.csv("data-alt.csv", function(error, data) {
-       	data.forEach(function(d) {
-	    	d.date = parseDate(d.date);
-	    	d.close = +d.close;
-	    });
-
-    	// Scale the range of the data again 
-    	x.domain(d3.extent(data, function(d) { return d.date; }));
-	    y.domain([0, d3.max(data, function(d) { return d.close; })]);
-
-    // Select the section we want to apply our changes to
-    var svg = d3.select("body").transition();
-
-    // Make the changes
-        svg.select(".line")   // change the line
-            .duration(750)
-            .attr("d", valueline(data));
-        svg.select(".x.axis") // change the x axis
-            .duration(750)
-            .call(xAxis);
-        svg.select(".y.axis") // change the y axis
-            .duration(750)
-            .call(yAxis);
-
-    });
+#scatterplot text {
+    font-size: 12px;
+    fill: #212121;
+    font-weight: bold;
 }
 
-</script>
+.axisLabel {
+    fill: #000 !important;
+}
+
+#scatterplot circle {
+    stroke: #991f00;
+    stroke-width: 2px;
+    fill: #E64A19;
+}
+
+#scatterplot .axis text {
+    fill: #000;
+    font-size: 11px;
+}
+
+#scatterplot .title {
+    font-size: 20px;
+}
+
+#scatterplot svg {
+    padding-left: 100px;
+    padding-bottom: 30px;
+    padding-top: 20px;
+}
+#scatterplot button {
+    background-color:#f2f2f2;
+    text-align:center;
+    border-radius: 5px;
+    font-size: 20px;
+    font-weight: bold;
+}
+#scatterplot button:hover {
+    background-color: #b3b3b3;
+}
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>  
+<body>
+    <div id="scatterplot">
+        <p>
+            Click to toggle between <b>2003</b> to <b>2015</b> data: <button>Change Year</button>               
+        </p>
+        <div id="scatterSvg">
+    </div>
+    </div>
+    <script type="text/javascript" src="js/d3-tip.js"></script>
+    <script type="text/javascript">
+    //JS Object used to switch between 2003 and 2015 data using a simple button
+function yearSwitcherConstructor(year) {
+  this.currentYear = year;
+  this.prostitutionAttr = "count_pros_"+year;
+  this.vehicleAttr = "count_veh_"+year;
+  this.totalAttr = "count_tot_"+year;
+}
+
+//Load default 2003 data
+currentYear = 2003;
+var yearSwitcher = new yearSwitcherConstructor(currentYear);
+console.log(yearSwitcher);
+
+function loadScatterplot() {
+//Load total data from csv
+d3.csv("total.csv", function(data) {
+  dataset = data;
+
+    //Width and height
+    var w = 1000;
+    var h = 450;
+    var padding = 30;
+
+    //Create scaled x
+    var xScale = d3.scaleLinear()
+                   .domain([0, d3.max(dataset, function(d) { return +d[yearSwitcher.prostitutionAttr];})]) // from 0 to maximum value of input(x)
+                     .range([padding, w - padding * 2]); //from padding to the number of pixels declared in width - pad in order to avoid the edges
+    //Create scaled y
+    var yScale = d3.scaleLinear()
+                     .domain([0, d3.max(dataset, function(d) { return +d[yearSwitcher.vehicleAttr]; })]) // from 0 to maximum value of input(y)
+                     .range([h - padding, padding]); //from height - padding to the number of pixels declared in pad in order to avoid the edges and turn y upside down
+    //Create scaled r(radius) of the scatter points
+    var rScale = d3.scaleLinear()
+                     .domain([0, d3.max(dataset, function(d) { return +d[yearSwitcher.totalAttr]; })]) // from 0 to maximum value of input(y)
+                     .range([2, 30]); // Size of points   
+
+    //Define X axis
+    var xAxis = d3.axisBottom()
+    .scale(xScale)
+    .ticks(5);
+
+    //Define Y axis
+    var yAxis = d3.axisLeft()
+    .scale(yScale)
+    .ticks(5); 
+    
+
+    //Create SVG element
+    var svg = d3.select("#scatterSvg")
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h);
+    
+    //Define clipping path
+    svg.append("clipPath")        //Make a new clipPath
+       .attr("id", "chart-area") //Assign an ID
+       .append("rect")           //Within the clipPath, create a new rect
+       .attr("x", padding)
+       .attr("y", padding)
+       .attr("width", w - padding * 3)
+       .attr("height", h - padding *2);
+
+    //Create circles
+    svg.append("g")
+    .attr("id", "circles")
+    .attr("clip-path", "url(#chart-area)")
+    .selectAll("circle")
+    .data(dataset)
+    .enter()
+    .append("circle")
+    .attr("cx", function(d) {
+      return xScale(+d[yearSwitcher.prostitutionAttr]);
+    }) 
+    .attr("cy", function(d) {
+      return yScale(+d[yearSwitcher.vehicleAttr]);
+    })
+    .attr("r", function(d) {
+      return rScale(+d[yearSwitcher.totalAttr]);
+    });
+
+    //Create labels
+    svg.selectAll("text")
+    .data(dataset)
+    .enter()
+    .append("text")
+    .text(function(d) {
+      return d.PdDistrict;
+    })
+    .attr("x", function(d) {
+      return xScale(+d[yearSwitcher.prostitutionAttr]);
+    })
+    .attr("y", function(d) {
+      return yScale(+d[yearSwitcher.vehicleAttr]);
+    });
+
+    //Create X axis
+    svg.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + (h - padding) + ")")
+    .call(xAxis);
+
+    // Text label for the X axis
+    svg.append("text")             
+    .attr("transform","translate(" + w/2 + ", " + (h+10) + ")")
+    .style("text-anchor", "middle")
+    .text("PROSTITUTION")
+    .classed("axisLabel",true);
+
+    //Create Y axis
+    svg.append("g")
+    .attr("class", "y axis")
+    .attr("transform", "translate(" + padding + ",0)")
+    .call(yAxis);
+
+    // Text label for the Y axis
+    svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 - padding)
+    .attr("x",0 - (h / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("VEHICLE THEFT")
+    .classed("axisLabel",true);
+
+    // Text for the title of the plot
+    svg.append("text")
+    .attr("transform","translate(" + w/2 + ",0)")
+    .style("text-anchor","middle")
+    .text("Correlation of San Francisco crimes in "+currentYear)
+    .classed("title",true);
+    
+
+    //////////////////////////////////////On click update with new data////////////////////////////////////
+    d3.select("#scatterplot button").on("click", function(){
+      if (currentYear==2003)
+        currentYear = 2015;
+      else
+        currentYear = 2003;
+      yearSwitcher = new yearSwitcherConstructor(currentYear);
+        //Update all circles
+        svg.selectAll("circle")
+        .data(dataset)
+        .transition()
+        .duration(1000)    
+        .attr("cx", function(d) {
+          return xScale(+d[yearSwitcher.prostitutionAttr]);
+        })
+        .attr("cy", function(d) {
+          return yScale(+d[yearSwitcher.vehicleAttr]);
+        })
+        .attr("r", function(d) {
+          return rScale(+d[yearSwitcher.totalAttr]);
+        });
+        //Update label's position
+        svg.selectAll("text")
+        .data(dataset)
+        .transition()
+        .duration(1000)
+        .attr("x", function(d) {
+          return xScale(+d[yearSwitcher.prostitutionAttr]);
+        })
+        .attr("y", function(d) {
+          return yScale(+d[yearSwitcher.vehicleAttr]);
+        });
+        //Update title
+        svg.selectAll(".title")
+        .text("Correlation of San Francisco crimes in "+currentYear);
+      });
+  });
+}
+
+loadScatterplot();
+    </script>
 </body>
+</html>
