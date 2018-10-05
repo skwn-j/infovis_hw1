@@ -121,10 +121,6 @@
       .call(dyAxis);
 
     //-------------------------------------------------------------scatterplot
- 
-
-  
-
   function randomCircle() {
     let circle = 
             { 
@@ -159,23 +155,8 @@
 
   let button = d3.select('#plot')
     .append('button')
+    .text('update');
   
-  button
-    .on('click', function() {
-      for(let i=0; i<100; i++) {
-        plot_data[i] = randomCircle();
-      }
-
-      svg2
-        .selectAll('circle')
-        .transition()
-        .duration(1000)
-        .attr('r', d=>d.size)
-        .attr('cx', d=>px(d.val_x))
-        .attr('cy', d=>py(d.val_y))
-        .style('fill', d=>d.color);
-    });
-
   let svg2 = d3.select("#plot")
     .append('svg')
     .attr('width', svgWidth)
@@ -198,12 +179,47 @@
   
   svg2
   .append('g')
+  .attr('class', 'xAxis')
   .attr('transform', translate(0, height))
   .call(pxAxis);
   
   svg2
   .append('g')
+  .attr('class', 'yAxis')
   .call(pyAxis);
+
+
+  button
+  .on('click', function() {
+   
+
+    for(let i=0; i<100; i++) {
+      plot_data[i] = randomCircle();
+    }
+
+    px.domain([
+              d3.min(plot_data, d => d.val_x),
+              d3.max(plot_data, d => d.val_x)
+            ]);
+
+    py.domain([
+              d3.min(plot_data, d => d.val_y),
+              d3.max(plot_data, d => d.val_y)
+            ]);
+
+    let circles = svg2.selectAll('circle').data(plot_data);
+
+    circles.enter()
+      .append('circle')
+      .merge(plot_data)
+      .transition()
+      .duration(500)
+      .attr('r', d=>d.size)
+      .attr('cx', d=>px(d.val_x))
+      .attr('cy', d=>py(d.val_y))
+      .style('fill', d=>d.color);
+
+  });
 
 
   </script>
