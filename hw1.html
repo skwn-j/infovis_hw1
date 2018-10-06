@@ -8,6 +8,7 @@
 </head>
 <body>
   <div id= 'bar'> </div>
+  <div id= 'but'> </div>
   <div id= 'plot'> </div>
   <script src="https://d3js.org/d3.v5.min.js"></script>
   <script>
@@ -153,7 +154,7 @@
 
   let divergeScale = d3.scaleLinear(d3.schemeSpectral);
 
-  let button = d3.select('#plot')
+  let button = d3.select('#but')
     .append('button')
     .text('update');
   
@@ -174,19 +175,20 @@
     .attr('cy', d=>py(d.val_y))
     .style('fill', d=>d.color);
 
-  let pxAxis = d3.axisBottom(px);
-  let pyAxis = d3.axisLeft(py);
+ 
   
+  let pxAxis =
   svg2
   .append('g')
   .attr('class', 'xAxis')
   .attr('transform', translate(0, height))
-  .call(pxAxis);
+  .call(d3.axisBottom(px));
   
+  let pyAxis = 
   svg2
   .append('g')
   .attr('class', 'yAxis')
-  .call(pyAxis);
+  .call(d3.axisLeft(py));
 
 
   button
@@ -197,28 +199,34 @@
       plot_data[i] = randomCircle();
     }
 
-    px.domain([
-              d3.min(plot_data, d => d.val_x),
-              d3.max(plot_data, d => d.val_x)
-            ]);
+    px = d3.scaleLinear()
+              .domain([
+                d3.min(plot_data, d => d.val_x),
+                d3.max(plot_data, d => d.val_x)
+              ])
+              .range([0, width]);
 
-    py.domain([
-              d3.min(plot_data, d => d.val_y),
-              d3.max(plot_data, d => d.val_y)
-            ]);
+    py = d3.scaleLinear()
+              .domain([
+                d3.min(plot_data, d => d.val_y),
+                d3.max(plot_data, d => d.val_y)
+              ])
+              .range([height, 0]);
+
 
     let circles = svg2.selectAll('circle').data(plot_data);
-
-    circles.enter()
-      .append('circle')
-      .merge(plot_data)
-      .transition()
-      .duration(500)
+  
+    let t = d3.transition().duration(500);
+    circles
+      .transition(t)
       .attr('r', d=>d.size)
       .attr('cx', d=>px(d.val_x))
       .attr('cy', d=>py(d.val_y))
       .style('fill', d=>d.color);
-
+    
+    pxAxis.transition(t).call(d3.axisBottom(px));
+    pyAxis.transition(t).call(d3.axisLeft(py));
+   
   });
 
 
